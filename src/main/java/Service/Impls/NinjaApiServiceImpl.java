@@ -2,10 +2,14 @@ package Service.Impls;
 
 import Service.NinjaService;
 import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import static io.restassured.RestAssured.given;
@@ -26,7 +30,7 @@ public class NinjaApiServiceImpl implements NinjaService {
     @Override
     public boolean isAuthenticated() {
         loadProperties();
-       /* Map<String, String> body = new HashMap<>();
+        Map<String, String> body = new HashMap<>();
         body.put("client_id", properties.getProperty("clientId"));
         body.put("client_secret", properties.getProperty("clientSecret"));
         Response responseCode = given().auth().none().log().all()
@@ -35,13 +39,13 @@ public class NinjaApiServiceImpl implements NinjaService {
                 .then().log().all().statusCode(HttpStatus.SC_OK).extract()
                 .response();
         //validating response code
-        return (responseCode.getStatusCode() == 200); */
-        return true;
+        return (responseCode.getStatusCode() == 200);
+
     }
 
     @Override
     public String getAccessToken() {
-       /* loadProperties();
+        loadProperties();
         Map<String, String> body = new HashMap<>();
         body.put("client_id", properties.getProperty("clientId"));
         body.put("client_secret", properties.getProperty("clientSecret"));
@@ -51,8 +55,8 @@ public class NinjaApiServiceImpl implements NinjaService {
                 .when().post(getTokenEndPoint)
                 .then().log().all().statusCode(HttpStatus.SC_OK).extract()
                 .jsonPath();
-        accessToken = jsonPath.getString("access_token");*/
-        return "test";
+        accessToken = jsonPath.getString("access_token");
+        return accessToken;
     }
 
     @Override
