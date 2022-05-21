@@ -2,15 +2,14 @@ package Steps;
 
 import Beans.*;
 import Service.NinjaServiceFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import cucumber.api.DataTable;
+import cucumber.api.java.en.And;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import cucumber.api.java.en.When;
 import dto.ContactDetailsDTO;
 import dto.ParcelDTO;
-import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
 import org.junit.Assert;
 
 import java.util.List;
@@ -23,17 +22,23 @@ public class OrderSteps {
         Assert.assertTrue(NinjaServiceFactory.getNinjaServiceByType("API").isRegisteredUser());
     }
 
-    @When("^Shipper authenticate to NinjaVan system$")
+    @When("^Shipper verifies authentication$")
     public void isAuthenticated() throws Exception {
-        NinjaServiceFactory.getNinjaServiceByType("API").isAuthenticated();
+        Assert.assertTrue(NinjaServiceFactory.getNinjaServiceByType("API").isAuthenticated());
 
     }
 
-    @When("^Shipper selects (.*) service for '(.*) with following details$")
-    public void setFromDetails(String serviceLevel, String serviceType, DataTable dataTable) {
+    @And("^Shipper gets access token for creating order$")
+    public void getAccessToken() throws Exception {
+        NinjaServiceFactory.getNinjaServiceByType("API").getAccessToken();
+    }
 
-        List<ContactDetailsDTO> fromOrdersList = dataTable.asList(ContactDetailsDTO.class);
-        ContactDetailsDTO fromAddress = fromOrdersList.get(0);
+
+    @When("^Shipper selects (.*) service for (.*) with following details$")
+    public void setFromDetails(String serviceLevel, String serviceType, DataTable dataTable) {
+        List<ContactDetailsDTO> detailsDTO = dataTable.asList(ContactDetailsDTO.class);
+
+        ContactDetailsDTO fromAddress = detailsDTO.get(0);
         orders = Orders.builder().serviceLevel(serviceLevel).serviceType(serviceType).build();
         ContactDetails contactDetails = ContactDetails.builder()
                 .email(fromAddress.getEmail())
@@ -49,7 +54,8 @@ public class OrderSteps {
     }
 
     @And("^Shipper ships to following address$")
-    public void setToDetails(List<ContactDetailsDTO> contactDetailsDTO) {
+    public void setToDetails(DataTable dataTable) {
+        List<ContactDetailsDTO> contactDetailsDTO = dataTable.asList(ContactDetailsDTO.class);
         ContactDetailsDTO toAddress = contactDetailsDTO.get(0);
         ContactDetails contactDetails = ContactDetails.builder()
                 .email(toAddress.getEmail())
@@ -65,18 +71,19 @@ public class OrderSteps {
     }
 
     @Then("^Shipper places orders with following details on (.*)$")
-    public void createOrder(String pickupDate, List<ParcelDTO> parcelDTOS) throws JsonProcessingException {
+    public void createOrder(String pickupDate, DataTable dataTable) throws Exception {
+        List<ParcelDTO> parcelDTOS = dataTable.asList(ParcelDTO.class);
         ParcelDTO parcelDTO = parcelDTOS.get(0);
         Parcel parcel = Parcel.builder()
                 .pickupDate(pickupDate)
                 .deliveryTimeSlot(TimeSlot.builder()
                         .startTime(parcelDTO.getDeliveryStartTime())
                         .endTime(parcelDTO.getDeliveryEndTime())
-                        .timeZone(parcelDTO.getDeliveryTimeZone()).build())
+                        .timezone(parcelDTO.getDeliveryTimeZone()).build())
                 .pickupTimeSlot(TimeSlot.builder()
                         .startTime(parcelDTO.getPickupStartTime())
                         .endTime(parcelDTO.getPickupEndTime())
-                        .timeZone(parcelDTO.getPickupTimeZone()).build())
+                        .timezone(parcelDTO.getPickupTimeZone()).build())
                 .pickupAddress(Address.builder()
                         .address1(parcelDTO.getAddress1())
                         .address2(parcelDTO.getAddress2())
@@ -87,8 +94,8 @@ public class OrderSteps {
         orders.setParcelJob(parcel);
 
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.writeValueAsString(orders);
 
+        NinjaServiceFactory.getNinjaServiceByType("API").createOrder(objectMapper.writeValueAsString(orders));
     }
 
 }

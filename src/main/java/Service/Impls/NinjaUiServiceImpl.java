@@ -21,8 +21,13 @@ public class NinjaUiServiceImpl implements NinjaService {
     }
 
     @Override
-    public String isAuthenticated() {
+    public boolean isAuthenticated() {
         throw new UnsupportedOperationException("Only API method");
+    }
+
+    @Override
+    public String getAccessToken() {
+        return null;
     }
 
     @Override

@@ -6,7 +6,9 @@ public interface NinjaService {
 
     boolean isRegisteredUser();
 
-    String isAuthenticated();
+    boolean isAuthenticated();
+
+    String getAccessToken();
 
     boolean login();
 
@@ -14,6 +16,6 @@ public interface NinjaService {
 
     String printAirwayBill();
 
-    boolean  createOrder(String orderDetails);
+    boolean createOrder(String orderDetails);
 
 }
